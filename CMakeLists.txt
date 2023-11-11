@@ -102,7 +102,7 @@ else ()
   message (FATAL_ERROR "No memory stream implementation found")
 endif ()
 
-add_library(fmem ${SOURCES})
+add_library(fmem ${FMEM_LIBRARY_TYPE} ${SOURCES})
 add_library (fmem::fmem ALIAS fmem)
 target_include_directories (fmem PUBLIC "${PROJECT_BINARY_DIR}/gen")
 
