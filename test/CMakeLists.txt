@@ -19,11 +19,18 @@ if(EXISTS "${CMAKE_BINARY_DIR}/Criterion/subprojects/boxfort/src/libboxfort${LIB
 endif()
 
 function(add_library_if_exists library_path library_name)
+    message(STATUS "Adding library if exists: Path=${library_path}, Name=${library_name}")
+
     set(library_full_path "${library_path}/${library_name}${LIB_EXT}")
+    message(STATUS "Constructed full library path: ${library_full_path}")
 
     if(EXISTS "${library_full_path}")
+        message(STATUS "${library_name}${LIB_EXT} exists at ${library_full_path}")
         list(APPEND CRITERION_LIBRARIES "${library_full_path}")
+        message(STATUS "Appended to CRITERION_LIBRARIES: ${library_full_path}")
     else()
+        message(STATUS "${library_name}${LIB_EXT} not found at ${library_full_path}, trying to find in directory")
+
         # Use find command to locate the library
         execute_process(
             COMMAND find "${library_path}" -name "${library_name}${LIB_EXT}"
@@ -31,12 +38,15 @@ function(add_library_if_exists library_path library_name)
             OUTPUT_STRIP_TRAILING_WHITESPACE
         )
 
+        message(STATUS "Find command output: ${found_library}")
+
         # If found, append to CRITERION_LIBRARIES
         if(found_library)
             message(STATUS "Found ${library_name}${LIB_EXT} at: ${found_library}")
             list(APPEND CRITERION_LIBRARIES "${found_library}")
+            message(STATUS "Appended to CRITERION_LIBRARIES: ${found_library}")
         else()
-            message(WARNING "${library_name}${LIB_EXT} not found in specified path.")
+            message(WARNING "${library_name}${LIB_EXT} not found in the specified path.")
         endif()
     endif()
 endfunction()
