@@ -5,37 +5,30 @@ else()
     set(LIB_EXT ".a")
 endif()
   
-# Append additional libraries to CRITERION_LIBRARIES if they exist
-if(EXISTS "${CMAKE_BINARY_DIR}/Criterion/subprojects/nanomsg/libnanomsg${LIB_EXT}")
-    list(APPEND CRITERION_LIBRARIES "${CMAKE_BINARY_DIR}/Criterion/subprojects/nanomsg/libnanomsg${LIB_EXT}")
-endif()
-
-if(EXISTS "${CMAKE_BINARY_DIR}/Criterion/subprojects/nanopb/libprotobuf_nanopb_static${LIB_EXT}")
-    list(APPEND CRITERION_LIBRARIES "${CMAKE_BINARY_DIR}/Criterion/subprojects/nanopb/libprotobuf_nanopb_static${LIB_EXT}")
-endif()
-
-if(EXISTS "${CMAKE_BINARY_DIR}/Criterion/subprojects/boxfort/src/libboxfort${LIB_EXT}")
-    list(APPEND CRITERION_LIBRARIES "${CMAKE_BINARY_DIR}/Criterion/subprojects/boxfort/src/libboxfort${LIB_EXT}")
-endif()
-
-if(EXISTS "${CMAKE_BINARY_DIR}/Criterion/subprojects/libgit2/libgit2${LIB_EXT}")
-    list(APPEND CRITERION_LIBRARIES "${CMAKE_BINARY_DIR}/Criterion/subprojects/libgit2/libgit2${LIB_EXT}")
-else()
-    # Execute the find program to locate libgit2.a don't write libgit2${LIB_EXT} because FIND: Parameter format not correct
-    execute_process(
-        COMMAND find "${CMAKE_BINARY_DIR}/Criterion" -name libgit2${LIB_EXT}
-        OUTPUT_VARIABLE FOUND_LIBGIT2
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
-
-    # If found, append to CRITERION_LIBRARIES
-    if(FOUND_LIBGIT2)
-        message(STATUS "Found libgit2.a at: ${FOUND_LIBGIT2}")
-        list(APPEND CRITERION_LIBRARIES "${FOUND_LIBGIT2}")
+function(append_library LIB_PATH LIB_NAME)
+    set(FULL_LIB_PATH "${CMAKE_BINARY_DIR}/Criterion/subprojects/${LIB_PATH}/lib${LIB_NAME}${LIB_EXT}")
+    if(EXISTS "${FULL_LIB_PATH}")
+        list(APPEND CRITERION_LIBRARIES "${FULL_LIB_PATH}")
     else()
-        message(WARNING "libgit2.a not found in Criterion subprojects.")
+        execute_process(
+            COMMAND find "${CMAKE_BINARY_DIR}/Criterion" -name "lib${LIB_NAME}${LIB_EXT}"
+            OUTPUT_VARIABLE FOUND_LIB
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+        if(FOUND_LIB)
+            message(STATUS "Found lib${LIB_NAME}${LIB_EXT} at: ${FOUND_LIB}")
+            list(APPEND CRITERION_LIBRARIES "${FOUND_LIB}")
+        else()
+            message(WARNING "lib${LIB_NAME}${LIB_EXT} not found in Criterion subprojects.")
+        endif()
     endif()
-endif()
+endfunction()
+
+# Usage examples
+append_library("nanomsg" "nanomsg")
+append_library("nanopb" "protobuf_nanopb_static")
+append_library("boxfort/src" "boxfort")
+append_library("libgit2" "git2")
 
 
 include_directories(SYSTEM "${CRITERION_INCLUDE_DIRS}")
