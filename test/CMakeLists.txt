@@ -18,12 +18,12 @@ if(EXISTS "${CMAKE_BINARY_DIR}/Criterion/subprojects/boxfort/src/libboxfort${LIB
     list(APPEND CRITERION_LIBRARIES "${CMAKE_BINARY_DIR}/Criterion/subprojects/boxfort/src/libboxfort${LIB_EXT}")
 endif()
 
-function(add_library_if_exists library_name direct_library_path lib_ext libraries_list base_search_directory)
+function(add_library_if_exists library_name direct_library_path lib_ext base_search_directory)
     # Check if the library exists at the direct path
     set(library_full_path "${direct_library_path}/${library_name}${lib_ext}")
     if(EXISTS "${library_full_path}")
         # If it exists, append to the specified libraries list
-        list(APPEND ${libraries_list} "${library_full_path}")
+        list(APPEND ${CRITERION_LIBRARIES} "${library_full_path}")
     else()
         # If not found, execute the find command to locate the library in the base search directory
         execute_process(
@@ -42,7 +42,7 @@ function(add_library_if_exists library_name direct_library_path lib_ext librarie
     endif()
 endfunction()
 # Example usage
-add_library_if_exists("libgit2" "${CMAKE_BINARY_DIR}/Criterion/subprojects/libgit2" "${LIB_EXT}" "CRITERION_LIBRARIES" "${CMAKE_BINARY_DIR}/Criterion")
+add_library_if_exists("libgit2" "${CMAKE_BINARY_DIR}/Criterion/subprojects/libgit2" "${LIB_EXT}" "${CMAKE_BINARY_DIR}/Criterion")
 
 
 
