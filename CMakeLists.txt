@@ -4,7 +4,7 @@
 
 cmake_minimum_required (VERSION 2.8.12)
 
-option(BUILD_SHARED_LIBS "Build shared library." ON)
+option(BUILD_SHARED_LIBS "Build shared library." OFF)
 # Add an option to control whether to build static or shared library
 option(FMEM_STATIC "Build fmem as a static library." ON)
 
