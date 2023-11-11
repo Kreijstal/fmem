@@ -5,30 +5,46 @@ else()
     set(LIB_EXT ".a")
 endif()
   
-function(append_library LIB_PATH LIB_NAME)
-    set(FULL_LIB_PATH "${CMAKE_BINARY_DIR}/Criterion/subprojects/${LIB_PATH}/lib${LIB_NAME}${LIB_EXT}")
-    if(EXISTS "${FULL_LIB_PATH}")
-        list(APPEND CRITERION_LIBRARIES "${FULL_LIB_PATH}")
+# Append additional libraries to CRITERION_LIBRARIES if they exist
+if(EXISTS "${CMAKE_BINARY_DIR}/Criterion/subprojects/nanomsg/libnanomsg${LIB_EXT}")
+    list(APPEND CRITERION_LIBRARIES "${CMAKE_BINARY_DIR}/Criterion/subprojects/nanomsg/libnanomsg${LIB_EXT}")
+endif()
+
+if(EXISTS "${CMAKE_BINARY_DIR}/Criterion/subprojects/nanopb/libprotobuf_nanopb_static${LIB_EXT}")
+    list(APPEND CRITERION_LIBRARIES "${CMAKE_BINARY_DIR}/Criterion/subprojects/nanopb/libprotobuf_nanopb_static${LIB_EXT}")
+endif()
+
+if(EXISTS "${CMAKE_BINARY_DIR}/Criterion/subprojects/boxfort/src/libboxfort${LIB_EXT}")
+    list(APPEND CRITERION_LIBRARIES "${CMAKE_BINARY_DIR}/Criterion/subprojects/boxfort/src/libboxfort${LIB_EXT}")
+endif()
+
+function(add_library_if_exists library_name direct_library_path lib_ext libraries_list base_search_directory)
+    # Check if the library exists at the direct path
+    set(library_full_path "${direct_library_path}/${library_name}${lib_ext}")
+    if(EXISTS "${library_full_path}")
+        # If it exists, append to the specified libraries list
+        list(APPEND ${libraries_list} "${library_full_path}")
     else()
+        # If not found, execute the find command to locate the library in the base search directory
         execute_process(
-            COMMAND find "${CMAKE_BINARY_DIR}/Criterion" -name "lib${LIB_NAME}${LIB_EXT}"
-            OUTPUT_VARIABLE FOUND_LIB
+            COMMAND find "${base_search_directory}" -name "${library_name}${lib_ext}"
+            OUTPUT_VARIABLE found_library
             OUTPUT_STRIP_TRAILING_WHITESPACE
         )
-        if(FOUND_LIB)
-            message(STATUS "Found lib${LIB_NAME}${LIB_EXT} at: ${FOUND_LIB}")
-            list(APPEND CRITERION_LIBRARIES "${FOUND_LIB}")
+
+        # If found, append to the specified libraries list
+        if(found_library)
+            message(STATUS "Found ${library_name}${lib_ext} at: ${found_library}")
+            list(APPEND ${libraries_list} "${found_library}")
         else()
-            message(WARNING "lib${LIB_NAME}${LIB_EXT} not found in Criterion subprojects.")
+            message(WARNING "${library_name}${lib_ext} not found in ${base_search_directory}.")
         endif()
     endif()
 endfunction()
+# Example usage
+add_library_if_exists("libgit2" "${CMAKE_BINARY_DIR}/Criterion/subprojects/libgit2" "${LIB_EXT}" "CRITERION_LIBRARIES" "${CMAKE_BINARY_DIR}/Criterion")
 
-# Usage examples
-append_library("nanomsg" "nanomsg")
-append_library("nanopb" "protobuf_nanopb_static")
-append_library("boxfort/src" "boxfort")
-append_library("libgit2" "git2")
+
 
 
 include_directories(SYSTEM "${CRITERION_INCLUDE_DIRS}")
