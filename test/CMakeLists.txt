@@ -21,13 +21,14 @@ function(append_library LIB_PATH LIB_NAME)
             message(WARNING "lib${LIB_NAME}${LIB_EXT} not found in Criterion subprojects.")
         endif()
     endif()
+    set(CRITERION_LIBRARIES "${CRITERION_LIBRARIES}" PARENT_SCOPE)
 endfunction()
 
 # Usage examples
-append_library("nanomsg/nanomsg" "nanomsg")
-append_library("nanopb/nanopb" "protobuf_nanopb_static")
+append_library("nanomsg" "nanomsg")
+append_library("nanopb" "protobuf_nanopb_static")
 append_library("boxfort/src" "boxfort")
-append_library("libgit2" "libgit2")
+append_library("libgit2" "git2")
 
 function(copy_dll DLL_FULL_PATH DLL_NAME)
     if(WIN32)
