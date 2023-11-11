@@ -34,16 +34,11 @@ function(copy_dll DLL_FULL_PATH DLL_NAME)
         # Construct the full path to the DLL
         set(DLL_PATH "${CMAKE_BINARY_DIR}/${DLL_FULL_PATH}/${DLL_NAME}.dll")
 
-        # Only add the copy command if the DLL exists
-        if(EXISTS "${DLL_PATH}")
-            add_custom_command(TARGET unit_tests POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                    "${DLL_PATH}"
-                    "$<TARGET_FILE_DIR:unit_tests>"
-            )
-        else()
-            message(STATUS "DLL not found, skipping copy: ${DLL_PATH}")
-        endif()
+        # Add a custom command to copy the DLL if it exists
+        add_custom_command(TARGET unit_tests POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --green --bold "Attempting to copy ${DLL_NAME}.dll"
+            COMMAND bash -c "if [[ -f '${DLL_PATH}' ]]; then ${CMAKE_COMMAND} -E copy_if_different '${DLL_PATH}' '$<TARGET_FILE_DIR:unit_tests>'; fi"
+        )
     endif()
 endfunction()
 
@@ -61,10 +56,10 @@ message(STATUS "Linking unit_tests with libraries: fmem, ${CRITERION_LIBRARIES}"
 
 target_link_libraries (unit_tests fmem "${CRITERION_LIBRARIES}")
 
-copy_dll("Criterion/subprojects/nanomsg/nanomsg" "nanomsg")
-copy_dll("Criterion/subprojects/nanopb/nanopb" "protobuf_nanopb_static")
-copy_dll("Criterion/subprojects/boxfort/src" "boxfort")
-copy_dll("Criterion/subprojects/libgit2" "libgit2")
+copy_dll("Criterion/subprojects/nanomsg/nanomsg/" "nanomsg")
+copy_dll("Criterion/subprojects/nanopb/nanopb/" "protobuf_nanopb_static")
+copy_dll("Criterion/subprojects/boxfort/src/" "boxfort")
+copy_dll("Criterion/subprojects/libgit2/" "libgit2")
 copy_dll("" "libfmem")  # For libfmem.dll in the build directory
 
 
