@@ -18,31 +18,30 @@ if(EXISTS "${CMAKE_BINARY_DIR}/Criterion/subprojects/boxfort/src/libboxfort${LIB
     list(APPEND CRITERION_LIBRARIES "${CMAKE_BINARY_DIR}/Criterion/subprojects/boxfort/src/libboxfort${LIB_EXT}")
 endif()
 
-function(add_library_if_exists library_name direct_library_path lib_ext base_search_directory)
-    # Check if the library exists at the direct path
-    set(library_full_path "${direct_library_path}/${library_name}${lib_ext}")
+function(add_library_if_exists library_path library_name)
+    set(library_full_path "${library_path}/${library_name}${LIB_EXT}")
+
     if(EXISTS "${library_full_path}")
-        # If it exists, append to the specified libraries list
-        list(APPEND ${CRITERION_LIBRARIES} "${library_full_path}")
+        list(APPEND CRITERION_LIBRARIES "${library_full_path}")
     else()
-        # If not found, execute the find command to locate the library in the base search directory
+        # Use find command to locate the library
         execute_process(
-            COMMAND find "${base_search_directory}" -name "${library_name}${lib_ext}"
+            COMMAND find "${library_path}" -name "${library_name}${LIB_EXT}"
             OUTPUT_VARIABLE found_library
             OUTPUT_STRIP_TRAILING_WHITESPACE
         )
 
-        # If found, append to the specified libraries list
+        # If found, append to CRITERION_LIBRARIES
         if(found_library)
-            message(STATUS "Found ${library_name}${lib_ext} at: ${found_library}")
-            list(APPEND ${libraries_list} "${found_library}")
+            message(STATUS "Found ${library_name}${LIB_EXT} at: ${found_library}")
+            list(APPEND CRITERION_LIBRARIES "${found_library}")
         else()
-            message(WARNING "${library_name}${lib_ext} not found in ${base_search_directory}.")
+            message(WARNING "${library_name}${LIB_EXT} not found in specified path.")
         endif()
     endif()
 endfunction()
-# Example usage
-add_library_if_exists("libgit2" "${CMAKE_BINARY_DIR}/Criterion/subprojects/libgit2" "${LIB_EXT}" "${CMAKE_BINARY_DIR}/Criterion")
+
+add_library_if_exists("${CMAKE_BINARY_DIR}/Criterion/subprojects/libgit2" "libgit2")
 
 
 
