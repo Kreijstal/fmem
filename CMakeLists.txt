@@ -5,7 +5,8 @@
 cmake_minimum_required (VERSION 2.8.12)
 
 option(BUILD_SHARED_LIBS "Build shared library." OFF)
-
+# Add an option to control whether to build static or shared library
+option(FMEM_STATIC "Build fmem as a static library." ON)
 if (POLICY CMP0048)
   # cmake warns if fmem is included from a parent directory whose CMakeLists.txt
   # requires a CMake version of 3.0 or later
