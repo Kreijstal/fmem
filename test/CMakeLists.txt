@@ -49,6 +49,7 @@ function(add_library_if_exists library_path library_name)
             message(WARNING "${library_name}${LIB_EXT} not found in the specified path.")
         endif()
     endif()
+    set(CRITERION_LIBRARIES "${CRITERION_LIBRARIES}" PARENT_SCOPE)
 endfunction()
 
 add_library_if_exists("${CMAKE_BINARY_DIR}/Criterion/subprojects/libgit2" "libgit2")
