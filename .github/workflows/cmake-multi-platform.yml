@@ -27,6 +27,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
         build_type: [Release]
+        library_type: [STATIC, SHARED] # STATIC, SHARED, MODULE, OBJECT, INTERFACE
         c_compiler: [gcc, clang]
         include:
           - os: windows-latest
@@ -66,7 +67,7 @@ jobs:
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
       if: matrix.os == 'windows-latest'
       run: |
-        cmake -B $BUILD_OUTPUT_DIR -G"MSYS Makefiles" -S $BUILD_OUTPUT_DIR/..
+        cmake -DFMEM_STATIC=${{ matrix.library_type == 'STATIC' }}  -B $BUILD_OUTPUT_DIR -G"MSYS Makefiles" -S $BUILD_OUTPUT_DIR/..
       shell: msys2 {0}
 
     - name: Configure CMake (Ubuntu)
@@ -76,9 +77,8 @@ jobs:
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+        -DFMEM_STATIC=${{ matrix.library_type == 'STATIC' }} 
         -S ${{ github.workspace }}
-
-
 
     - name: Build (Windows)
       if: matrix.os == 'windows-latest'

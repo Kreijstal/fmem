@@ -5,37 +5,49 @@ else()
     set(LIB_EXT ".a")
 endif()
   
-# Append additional libraries to CRITERION_LIBRARIES if they exist
-if(EXISTS "${CMAKE_BINARY_DIR}/Criterion/subprojects/nanomsg/libnanomsg${LIB_EXT}")
-    list(APPEND CRITERION_LIBRARIES "${CMAKE_BINARY_DIR}/Criterion/subprojects/nanomsg/libnanomsg${LIB_EXT}")
-endif()
-
-if(EXISTS "${CMAKE_BINARY_DIR}/Criterion/subprojects/nanopb/libprotobuf_nanopb_static${LIB_EXT}")
-    list(APPEND CRITERION_LIBRARIES "${CMAKE_BINARY_DIR}/Criterion/subprojects/nanopb/libprotobuf_nanopb_static${LIB_EXT}")
-endif()
-
-if(EXISTS "${CMAKE_BINARY_DIR}/Criterion/subprojects/boxfort/src/libboxfort${LIB_EXT}")
-    list(APPEND CRITERION_LIBRARIES "${CMAKE_BINARY_DIR}/Criterion/subprojects/boxfort/src/libboxfort${LIB_EXT}")
-endif()
-
-if(EXISTS "${CMAKE_BINARY_DIR}/Criterion/subprojects/libgit2/libgit2${LIB_EXT}")
-    list(APPEND CRITERION_LIBRARIES "${CMAKE_BINARY_DIR}/Criterion/subprojects/libgit2/libgit2${LIB_EXT}")
-else()
-    # Execute the find program to locate libgit2.a don't write libgit2${LIB_EXT} because FIND: Parameter format not correct
-    execute_process(
-        COMMAND find "${CMAKE_BINARY_DIR}/Criterion" -name libgit2${LIB_EXT}
-        OUTPUT_VARIABLE FOUND_LIBGIT2
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
-
-    # If found, append to CRITERION_LIBRARIES
-    if(FOUND_LIBGIT2)
-        message(STATUS "Found libgit2.a at: ${FOUND_LIBGIT2}")
-        list(APPEND CRITERION_LIBRARIES "${FOUND_LIBGIT2}")
+function(append_library LIB_PATH LIB_NAME)
+    if(EXISTS "${CMAKE_BINARY_DIR}/Criterion/subprojects/${LIB_PATH}/lib${LIB_NAME}${LIB_EXT}")
+        list(APPEND CRITERION_LIBRARIES "${CMAKE_BINARY_DIR}/Criterion/subprojects/${LIB_PATH}/lib${LIB_NAME}${LIB_EXT}")
     else()
-        message(WARNING "libgit2.a not found in Criterion subprojects.")
+        execute_process(
+            COMMAND find "${CMAKE_BINARY_DIR}/Criterion" -name "lib${LIB_NAME}${LIB_EXT}"
+            OUTPUT_VARIABLE FOUND_LIB
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+        if(FOUND_LIB)
+            message(STATUS "Found lib${LIB_NAME}${LIB_EXT} at: ${FOUND_LIB}")
+            list(APPEND CRITERION_LIBRARIES "${FOUND_LIB}")
+        else()
+            message(WARNING "lib${LIB_NAME}${LIB_EXT} not found in Criterion subprojects.")
+        endif()
     endif()
-endif()
+endfunction()
+
+# Usage examples
+append_library("nanomsg/nanomsg" "nanomsg")
+append_library("nanopb/nanopb" "protobuf_nanopb_static")
+append_library("boxfort/src" "boxfort")
+append_library("libgit2" "libgit2")
+
+function(copy_dll DLL_FULL_PATH DLL_NAME)
+    if(WIN32)
+        # Construct the full path to the DLL
+        set(DLL_PATH "${CMAKE_BINARY_DIR}/${DLL_FULL_PATH}/${DLL_NAME}.dll")
+
+        # Only add the copy command if the DLL exists
+        if(EXISTS "${DLL_PATH}")
+            add_custom_command(TARGET unit_tests POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    "${DLL_PATH}"
+                    "$<TARGET_FILE_DIR:unit_tests>"
+            )
+        else()
+            message(STATUS "DLL not found, skipping copy: ${DLL_PATH}")
+        endif()
+    endif()
+endfunction()
+
+
 
 
 include_directories(SYSTEM "${CRITERION_INCLUDE_DIRS}")
@@ -48,5 +60,12 @@ add_executable (unit_tests "${TEST_SOURCES}")
 message(STATUS "Linking unit_tests with libraries: fmem, ${CRITERION_LIBRARIES}")
 
 target_link_libraries (unit_tests fmem "${CRITERION_LIBRARIES}")
+
+copy_dll("Criterion/subprojects/nanomsg/nanomsg" "nanomsg")
+copy_dll("Criterion/subprojects/nanopb/nanopb" "protobuf_nanopb_static")
+copy_dll("Criterion/subprojects/boxfort/src" "boxfort")
+copy_dll("Criterion/subprojects/libgit2" "libgit2")
+copy_dll("" "libfmem")  # For libfmem.dll in the build directory
+
 
 add_test (unit_tests unit_tests)

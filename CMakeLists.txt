@@ -4,7 +4,7 @@
 
 cmake_minimum_required (VERSION 2.8.12)
 
-option(BUILD_SHARED_LIBS "Build shared library." OFF)
+option(BUILD_SHARED_LIBS "Build shared library." ON)
 
 if (POLICY CMP0048)
   # cmake warns if fmem is included from a parent directory whose CMakeLists.txt
@@ -24,7 +24,9 @@ if(MSVC AND NOT BUILD_SHARED_LIBS)
           $<$<CONFIG:Release>:/MT>
   )
 endif(MSVC AND NOT BUILD_SHARED_LIBS)
-
+if(BUILD_SHARED_LIBS)
+  set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+endif(BUILD_SHARED_LIBS)
 include (CheckSymbolExists)
 include (CheckCSourceCompiles)
 include (GNUInstallDirs)
@@ -91,7 +93,7 @@ else ()
   message (FATAL_ERROR "No memory stream implementation found")
 endif ()
 
-add_library (fmem ${SOURCES})
+add_library (fmem SHARED ${SOURCES})
 add_library (fmem::fmem ALIAS fmem)
 target_include_directories (fmem PUBLIC "${PROJECT_BINARY_DIR}/gen")
 
