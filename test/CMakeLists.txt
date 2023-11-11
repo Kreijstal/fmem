@@ -27,7 +27,7 @@ endfunction()
 append_library("nanomsg" "nanomsg")
 append_library("nanopb" "protobuf_nanopb_static")
 append_library("boxfort/src" "boxfort")
-append_library("libgit2" "libgit2")
+append_library("libgit2" "git2")
 
 
 include_directories(SYSTEM "${CRITERION_INCLUDE_DIRS}")
