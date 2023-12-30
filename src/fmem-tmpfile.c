@@ -57,6 +57,8 @@ void fmem_mem(fmem *file, void **mem, size_t *size)
         return;
     }
 
+    cv.impl->buf = buf;
+
     rewind(cv.impl->file);
     if (fread(buf, 1, bufsize, cv.impl->file) < (size_t)bufsize) {
         free(buf);
