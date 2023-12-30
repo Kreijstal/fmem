@@ -23,7 +23,10 @@ void fmem_init(fmem *file)
 void fmem_term(fmem *file)
 {
     union fmem_conv cv = { .fm = file };
-    free(cv.impl->buf);
+
+    if (cv.impl->buf) {
+        free(cv.impl->buf);
+    }
 }
 
 FILE *fmem_open(fmem *file, const char *mode)
@@ -31,7 +34,9 @@ FILE *fmem_open(fmem *file, const char *mode)
     union fmem_conv cv = { .fm = file };
     FILE *f = tmpfile();
     if (f) {
-        free(cv.impl->buf);
+        if (cv.impl->buf) {
+            free(cv.impl->buf);
+        }
         cv.impl->file = f;
     }
     return f;
@@ -43,8 +48,10 @@ void fmem_mem(fmem *file, void **mem, size_t *size)
     *mem = NULL;
     *size = 0;
 
-    free(cv.impl->buf);
-    cv.impl->buf = NULL;
+    if (cv.impl->buf) {
+        free(cv.impl->buf);
+        cv.impl->buf = NULL;
+    }
 
     fseek(cv.impl->file, 0, SEEK_END);
     long bufsize = ftell(cv.impl->file);
@@ -57,13 +64,12 @@ void fmem_mem(fmem *file, void **mem, size_t *size)
         return;
     }
 
-    cv.impl->buf = buf;
-
     rewind(cv.impl->file);
     if (fread(buf, 1, bufsize, cv.impl->file) < (size_t)bufsize) {
         free(buf);
         return;
     }
+    cv.impl->buf = buf;
     *mem = buf;
     *size = bufsize;
 }
